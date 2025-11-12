@@ -2,66 +2,10 @@
   "properties": {
     "activities": [
       {
-        "type": "Lookup",
-        "typeProperties": {
-          "source": {
-            "type": "DelimitedTextSource",
-            "formatSettings": {
-              "type": "DelimitedTextReadSettings"
-            },
-            "storeSettings": {
-              "type": "LakehouseReadSettings",
-              "recursive": true,
-              "enablePartitionDiscovery": false
-            }
-          },
-          "datasetSettings": {
-            "type": "DelimitedText",
-            "typeProperties": {
-              "location": {
-                "type": "LakehouseLocation",
-                "folderPath": "/lakehouse/default/Files/control/",
-                "fileName": "last_processed.json"
-              },
-              "columnDelimiter": ",",
-              "quoteChar": "\"",
-              "escapeChar": "\\",
-              "firstRowAsHeader": true
-            },
-            "schema": [],
-            "connectionSettings": {
-              "name": "LH",
-              "properties": {
-                "type": "Lakehouse",
-                "typeProperties": {
-                  "artifactId": "e4017931-fb32-bd96-4023-9d33c84f89ea",
-                  "workspaceId": "00000000-0000-0000-0000-000000000000",
-                  "rootFolder": "Files"
-                },
-                "externalReferences": {
-                  "connection": "2a925156-4521-4014-bae3-3bf462355446"
-                },
-                "annotations": []
-              }
-            },
-            "annotations": []
-          }
-        },
-        "policy": {
-          "timeout": "0.12:00:00",
-          "retry": 0,
-          "retryIntervalInSeconds": 30,
-          "secureInput": false,
-          "secureOutput": false
-        },
-        "name": "Lookup key metadata",
-        "dependsOn": []
-      },
-      {
         "type": "IfCondition",
         "typeProperties": {
           "expression": {
-            "value": "@equals(activity('Lookup key metadata').status, 'Succeeded')",
+            "value": "@equals(activity('Lookup Control Table').status, 'Succeeded')",
             "type": "Expression"
           },
           "ifTrueActivities": [
@@ -69,7 +13,10 @@
               "type": "SetVariable",
               "typeProperties": {
                 "variableName": "LastProcessedFile",
-                "value": "@activity('Lookup key metadata').output.firstRow.LastProcessedFile"
+                "value": {
+                  "value": "@activity('Lookup Control Table').output.firstRow.LastProcessedFile",
+                  "type": "Expression"
+                }
               },
               "policy": {
                 "secureInput": false,
@@ -98,7 +45,7 @@
         "name": "CheckLookupResult",
         "dependsOn": [
           {
-            "activity": "Lookup key metadata",
+            "activity": "Lookup Control Table",
             "dependencyConditions": [
               "Completed"
             ]
@@ -140,6 +87,86 @@
         "dependsOn": [
           {
             "activity": "CheckLookupResult",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Lookup",
+        "typeProperties": {
+          "source": {
+            "type": "LakehouseTableSource"
+          },
+          "datasetSettings": {
+            "type": "LakehouseTable",
+            "typeProperties": {
+              "table": {
+                "value": "SELECT TOP 1 LastProcessedFile \nFROM download_control \nORDER BY ProcessingTimestamp DESC",
+                "type": "Expression"
+              }
+            },
+            "schema": [],
+            "connectionSettings": {
+              "name": "LH",
+              "properties": {
+                "type": "Lakehouse",
+                "typeProperties": {
+                  "artifactId": "e4017931-fb32-bd96-4023-9d33c84f89ea",
+                  "workspaceId": "00000000-0000-0000-0000-000000000000",
+                  "rootFolder": "Tables"
+                },
+                "externalReferences": {
+                  "connection": "2a925156-4521-4014-bae3-3bf462355446"
+                },
+                "annotations": []
+              }
+            },
+            "annotations": []
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Lookup Control Table",
+        "dependsOn": []
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "db559fe6-6359-bcd9-4615-c671518baa16",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "source_folder": {
+              "value": "\"/lakehouse/default/Files/\"",
+              "type": "string"
+            },
+            "target_table": {
+              "value": "\"citibike_trips\"",
+              "type": "string"
+            },
+            "file_pattern": {
+              "value": "\"JC-2025*citibike-tripdata*.zip\"",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Extract and Load",
+        "dependsOn": [
+          {
+            "activity": "Get data",
             "dependencyConditions": [
               "Succeeded"
             ]

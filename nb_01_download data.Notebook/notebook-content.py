@@ -23,13 +23,16 @@
 # CELL ********************
 
 # Libraries
-
 import xml.etree.ElementTree as ET
 import requests
 import os
 from datetime import datetime
 import json
 import pandas as pd
+
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, StringType, LongType
+from pyspark.sql.functions import current_timestamp
 
 # METADATA ********************
 
@@ -55,28 +58,88 @@ import pandas as pd
 
 # CELL ********************
 
-# Load last processed file (if exists)
+# Initialize Spark Session
+spark = SparkSession.builder.getOrCreate()
 
-if os.path.exists(control_file_path):
+def get_last_processed_from_table():
+    """Read last processed file from Lakehouse table"""
     try:
-        with open(control_file_path, "r") as f: 
-            content = f.read().strip() 
-            if content: 
-                control_data = json.load(f) 
-                last_processed = control_data.get("LastProcessedFile", start_from) 
-                print(f"📂 Last processed file: {last_processed}") 
-            else: print("⚠️ No previous control file found — starting fresh.") 
-            control_data = {} 
-            last_processed = start_from
-                    
-    except json.JSONDecodeError:
-        print("⚠️ Control file is corrupted or not valid JSON — resetting.")
-        control_data = {}
-        last_processed = start_from
-else:
-    print("⚠️ No previous control file found — starting fresh.")
-    control_data = {}
-    last_processed = start_from
+        # Check if the control table exists
+        tables = spark.catalog.listTables()
+        table_exists = any(table.name == "download_control" for table in tables)
+
+        if table_exists:
+            control_df = spark.sql(
+                "SELECT TOP 1 LastProcessedFile FROM download_control ORDER BY ProcessingTimestamp DESC"
+            )
+
+            if control_df.count() > 0:
+                last_processed = control_df.collect()[0]["LastProcessedFile"]
+                print(f"📂 Last processed file from table: {last_processed}")
+                return last_processed
+    except Exception as e:
+        print(f"⚠️ Error reading from control table: {e}")
+    
+    print("⚠️ No control table found or error reading — using default start_from")
+    return start_from
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+def update_control_table(file_info, local_path):
+    """Update control table with latest processed file"""
+    try:
+        # Create control data
+        control_data = [(
+            file_info["Key"],           # LastProcessedFile
+            local_path,                 # FilePath
+            file_info["Size"],          # Size
+            file_info["LastModified"],  # LastModified (from S3)
+            datetime.now().isoformat()  # ProcessingTimestamp
+        )]
+
+        # Schema
+        schema = StructType([
+            StructField("LastProcessedFile", StringType(), True),
+            StructField("FilePath", StringType(), True),
+            StructField("Size", LongType(), True),
+            StructField("LastModified", StringType(), True),
+            StructField("ProcessingTimestamp", StringType(), True)
+        ])
+
+        # Create the DataFrame and write to table
+        df = spark.createDataFrame(control_data, schema)
+        df.write.mode("overwrite").format("delta").saveAsTable("download_control")
+
+        print(f"🗂️ Control table updated → {file_info['Key']}")
+
+        # Verify the write
+        verify_df = spark.sql("SELECT LastProcessedFile FROM download_control")
+        latest_file = verify_df.collect()[0]["LastProcessedFile"]
+        print(f" Verification: Latest in table = {latest_file}")
+        
+    except Exception as e:
+        print(f" Error updating control table: {e}")
+        raise
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# Load last processed file from Lakehouse table
+
+last_processed = get_last_processed_from_table()
 
 # METADATA ********************
 
@@ -89,6 +152,7 @@ else:
 
 # Fetch list of files from S3
 
+print("🌐 Fetching file list from S3...")
 response = requests.get(f"{s3_base_url}?list-type=2")
 response.raise_for_status()
 
@@ -122,7 +186,7 @@ if not files_2025:
     raise ValueError("No 2025 files found!")
 
 files_2025.sort(key=lambda x: x["Key"])
-print(f"Found {len(files_2025)} files for 2025.")
+print(f"📁 Found {len(files_2025)} files for 2025.")
 
 # METADATA ********************
 
@@ -138,9 +202,10 @@ print(f"Found {len(files_2025)} files for 2025.")
 files_to_download = [f for f in files_2025 if f["Key"] >= last_processed]
 
 if not files_to_download:
-    print("All 2025 files already processed. Nothing new to download.")
+    # Show current state for pipeline
+    latest = {"Key": last_processed, "Status": "No new files"}
 else:
-    print(f"{len(files_to_download)} new files to download starting from {last_processed}.")
+    print(f"⬇️ {len(files_to_download)} new files to download starting from {last_processed}.")
 
     for file_info in files_to_download:
         file_url = f"{s3_base_url}/{file_info['Key']}"
@@ -156,19 +221,8 @@ else:
 
         print(f"✅ Saved file: {local_path}")
 
-        # Update the control file after each download
-        metadata = {
-            "LastProcessedFile": file_info["Key"],
-            "FilePath": local_path,
-            "Size": file_info["Size"],
-            "LastModified": file_info["LastModified"]
-        }
-        os.makedirs(os.path.dirname(control_file_path), exist_ok=True)
-
-        with open(control_file_path, "w") as control:
-            json.dump(metadata, control, indent=2)
-
-        print(f"🗂️ Control file synced to Lakehouse → {metadata['LastProcessedFile']}")
+        # Update the control table after each successful download
+        update_control_table(file_info, local_path)
 
 latest = files_to_download[-1] if files_to_download else {"Key": last_processed}
 
@@ -183,6 +237,23 @@ latest = files_to_download[-1] if files_to_download else {"Key": last_processed}
 
 print("📤 Output metadata for pipeline:")
 print(json.dumps(latest, indent=2))
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# Final verification
+print("\n🔍 Final control table status:")
+try:
+    final_check = spark.sql("SELECT LastProcessedFile, ProcessingTimestamp FROM download_control")
+    final_check.show()
+except Exception as e:
+    print(f"Note: Could not display final table status: {e}")
 
 # METADATA ********************
 
