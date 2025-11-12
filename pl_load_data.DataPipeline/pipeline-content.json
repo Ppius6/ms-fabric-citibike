@@ -1,0 +1,156 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "Lookup",
+        "typeProperties": {
+          "source": {
+            "type": "DelimitedTextSource",
+            "formatSettings": {
+              "type": "DelimitedTextReadSettings"
+            },
+            "storeSettings": {
+              "type": "LakehouseReadSettings",
+              "recursive": true,
+              "enablePartitionDiscovery": false
+            }
+          },
+          "datasetSettings": {
+            "type": "DelimitedText",
+            "typeProperties": {
+              "location": {
+                "type": "LakehouseLocation",
+                "folderPath": "/lakehouse/default/Files/control/",
+                "fileName": "last_processed.json"
+              },
+              "columnDelimiter": ",",
+              "quoteChar": "\"",
+              "escapeChar": "\\",
+              "firstRowAsHeader": true
+            },
+            "schema": [],
+            "connectionSettings": {
+              "name": "LH",
+              "properties": {
+                "type": "Lakehouse",
+                "typeProperties": {
+                  "artifactId": "e4017931-fb32-bd96-4023-9d33c84f89ea",
+                  "workspaceId": "00000000-0000-0000-0000-000000000000",
+                  "rootFolder": "Files"
+                },
+                "externalReferences": {
+                  "connection": "2a925156-4521-4014-bae3-3bf462355446"
+                },
+                "annotations": []
+              }
+            },
+            "annotations": []
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Lookup key metadata",
+        "dependsOn": []
+      },
+      {
+        "type": "IfCondition",
+        "typeProperties": {
+          "expression": {
+            "value": "@equals(activity('Lookup key metadata').status, 'Succeeded')",
+            "type": "Expression"
+          },
+          "ifTrueActivities": [
+            {
+              "type": "SetVariable",
+              "typeProperties": {
+                "variableName": "LastProcessedFile",
+                "value": "@activity('Lookup key metadata').output.firstRow.LastProcessedFile"
+              },
+              "policy": {
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "SetLastProcessedFromFile",
+              "dependsOn": []
+            }
+          ],
+          "ifFalseActivities": [
+            {
+              "type": "SetVariable",
+              "typeProperties": {
+                "variableName": "LastProcessedFile",
+                "value": "\"JC-202501-citibike-tripdata.csv.zip\""
+              },
+              "policy": {
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "SetDefaultLastProcessed",
+              "dependsOn": []
+            }
+          ]
+        },
+        "name": "CheckLookupResult",
+        "dependsOn": [
+          {
+            "activity": "Lookup key metadata",
+            "dependencyConditions": [
+              "Completed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "96dabbb6-4ad6-bd95-4718-c391f3e3e395",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "s3_base_url": {
+              "value": "https://s3.amazonaws.com/tripdata",
+              "type": "string"
+            },
+            "start_from": {
+              "value": "@variables('LastProcessedFile')",
+              "type": "string"
+            },
+            "control_file_path": {
+              "value": "\"/lakehouse/default/Files/control/last_processed.json\"",
+              "type": "string"
+            },
+            "target_folder": {
+              "value": "\"/lakehouse/default/Files/citibike_raw/\"",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Get data",
+        "dependsOn": [
+          {
+            "activity": "CheckLookupResult",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ],
+    "variables": {
+      "LastProcessedFile": {
+        "type": "String"
+      }
+    }
+  }
+}
