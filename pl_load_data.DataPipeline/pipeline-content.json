@@ -43,6 +43,8 @@
           ]
         },
         "name": "CheckLookupResult",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
         "dependsOn": [
           {
             "activity": "Lookup Control Table",
@@ -55,15 +57,18 @@
       {
         "type": "TridentNotebook",
         "typeProperties": {
-          "notebookId": "96dabbb6-4ad6-bd95-4718-c391f3e3e395",
-          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "notebookId": "f3e3e395-c391-4718-bd95-4ad696dabbb6",
+          "workspaceId": "778b8b43-34a7-4b55-a273-7763a295d386",
           "parameters": {
             "s3_base_url": {
               "value": "https://s3.amazonaws.com/tripdata",
               "type": "string"
             },
             "start_from": {
-              "value": "@variables('LastProcessedFile')",
+              "value": {
+                "value": "@variables('LastProcessedFile')",
+                "type": "Expression"
+              },
               "type": "string"
             },
             "control_file_path": {
@@ -84,6 +89,8 @@
           "secureOutput": false
         },
         "name": "Get data",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
         "dependsOn": [
           {
             "activity": "CheckLookupResult",
@@ -102,8 +109,89 @@
           "datasetSettings": {
             "type": "LakehouseTable",
             "typeProperties": {
+              "table": "download_control"
+            },
+            "schema": [],
+            "connectionSettings": {
+              "name": "LH",
+              "properties": {
+                "type": "Lakehouse",
+                "typeProperties": {
+                  "artifactId": "c84f89ea-9d33-4023-bd96-fb32e4017931",
+                  "workspaceId": "778b8b43-34a7-4b55-a273-7763a295d386",
+                  "rootFolder": "Tables"
+                },
+                "externalReferences": {
+                  "connection": "2a925156-4521-4014-bae3-3bf462355446"
+                },
+                "annotations": []
+              }
+            },
+            "annotations": []
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Lookup Control Table",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": []
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "518baa16-c671-4615-bcd9-6359db559fe6",
+          "workspaceId": "778b8b43-34a7-4b55-a273-7763a295d386",
+          "parameters": {
+            "source_folder": {
+              "value": "/lakehouse/default/Files/",
+              "type": "string"
+            },
+            "target_table": {
+              "value": "citibike_trips",
+              "type": "string"
+            },
+            "file_pattern": {
+              "value": "JC-*-citibike-tripdata*.zip",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Extract and Load",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "Get data",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Lookup",
+        "typeProperties": {
+          "source": {
+            "type": "LakehouseTableSource"
+          },
+          "datasetSettings": {
+            "type": "LakehouseTable",
+            "typeProperties": {
               "table": {
-                "value": "SELECT TOP 1 LastProcessedFile \nFROM download_control \nORDER BY ProcessingTimestamp DESC",
+                "value": "SELECT TOP 1 \n    MAX(datetime) as last_weather_date\nFROM weather_data",
                 "type": "Expression"
               }
             },
@@ -133,27 +221,44 @@
           "secureInput": false,
           "secureOutput": false
         },
-        "name": "Lookup Control Table",
-        "dependsOn": []
+        "name": "Get Last Weather date",
+        "dependsOn": [
+          {
+            "activity": "Extract and Load",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
       },
       {
-        "type": "TridentNotebook",
+        "type": "Lookup",
         "typeProperties": {
-          "notebookId": "db559fe6-6359-bcd9-4615-c671518baa16",
-          "workspaceId": "00000000-0000-0000-0000-000000000000",
-          "parameters": {
-            "source_folder": {
-              "value": "\"/lakehouse/default/Files/\"",
-              "type": "string"
+          "source": {
+            "type": "LakehouseTableSource"
+          },
+          "datasetSettings": {
+            "type": "LakehouseTable",
+            "typeProperties": {
+              "table": "citibike_metadata"
             },
-            "target_table": {
-              "value": "\"citibike_trips\"",
-              "type": "string"
+            "schema": [],
+            "connectionSettings": {
+              "name": "LH",
+              "properties": {
+                "type": "Lakehouse",
+                "typeProperties": {
+                  "artifactId": "e4017931-fb32-bd96-4023-9d33c84f89ea",
+                  "workspaceId": "00000000-0000-0000-0000-000000000000",
+                  "rootFolder": "Tables"
+                },
+                "externalReferences": {
+                  "connection": "2a925156-4521-4014-bae3-3bf462355446"
+                },
+                "annotations": []
+              }
             },
-            "file_pattern": {
-              "value": "\"JC-2025*citibike-tripdata*.zip\"",
-              "type": "string"
-            }
+            "annotations": []
           }
         },
         "policy": {
@@ -163,12 +268,131 @@
           "secureInput": false,
           "secureOutput": false
         },
-        "name": "Extract and Load",
+        "name": "Get Max Trip Date",
         "dependsOn": [
           {
-            "activity": "Get data",
+            "activity": "Get Last Weather date",
             "dependencyConditions": [
-              "Succeeded"
+              "Completed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "IfCondition",
+        "typeProperties": {
+          "expression": {
+            "value": "@equals(activity('Get Last Weather date').status, 'Succeeded')",
+            "type": "Expression"
+          },
+          "ifTrueActivities": [
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "d0b9e696-60c5-8bcb-44a7-4acc20eddab7",
+                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "parameters": {
+                  "start_date": {
+                    "value": {
+                      "value": "@activity('Get Last Weather date').output.firstRow.last_weather_date",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "end_date": {
+                    "value": {
+                      "value": "@formatDateTime(activity('Get Max Trip Date').output.firstRow.max_started_at, 'yyyy-MM-dd')\n\n",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "latitude": {
+                    "value": {
+                      "value": "@activity('Get Last Weather date').output.firstRow.latitude",
+                      "type": "Expression"
+                    },
+                    "type": "float"
+                  },
+                  "longitude": {
+                    "value": {
+                      "value": "@activity('Get Last Weather date').output.firstRow.longitude",
+                      "type": "Expression"
+                    },
+                    "type": "float"
+                  },
+                  "max_trip_date": {
+                    "value": {
+                      "value": "@formatDateTime(activity('Get Max Trip Date').output.firstRow.max_started_at, 'yyyy-MM-dd')",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Fetch Weather Data",
+              "dependsOn": []
+            }
+          ],
+          "ifFalseActivities": [
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "d0b9e696-60c5-8bcb-44a7-4acc20eddab7",
+                "workspaceId": "00000000-0000-0000-0000-000000000000",
+                "parameters": {
+                  "start_date": {
+                    "value": "2025-01-01",
+                    "type": "string"
+                  },
+                  "end_date": {
+                    "value": {
+                      "value": "@formatDateTime(activity('Get Max Trip Date').output.firstRow.max_started_at, 'yyyy-MM-dd')",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  },
+                  "latitude": {
+                    "value": "40.728",
+                    "type": "float"
+                  },
+                  "longitude": {
+                    "value": "-74.077",
+                    "type": "float"
+                  },
+                  "max_trip_date": {
+                    "value": {
+                      "value": "@formatDateTime(activity('Get Max Trip Date').output.firstRow.max_started_at, 'yyyy-MM-dd')",
+                      "type": "Expression"
+                    },
+                    "type": "string"
+                  }
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Fetch Weather data first run",
+              "dependsOn": []
+            }
+          ]
+        },
+        "name": "Check Weather Update Needed",
+        "dependsOn": [
+          {
+            "activity": "Get Max Trip Date",
+            "dependencyConditions": [
+              "Completed"
             ]
           }
         ]
@@ -177,6 +401,14 @@
     "variables": {
       "LastProcessedFile": {
         "type": "String"
+      },
+      "weather_data": {
+        "type": "String",
+        "defaultValue": "{\"last_weather_date\":\"2024-12-31\",\"latitude\":\"40.728\",\"longitude\":\"-74.077\"}"
+      },
+      "trip_data": {
+        "type": "String",
+        "defaultValue": "{\"max_trip_date\":\"2025-01-01\"}"
       }
     }
   }
