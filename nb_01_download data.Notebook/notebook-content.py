@@ -41,13 +41,12 @@ from pyspark.sql.functions import current_timestamp
 # META   "language_group": "synapse_pyspark"
 # META }
 
-# CELL ********************
+# PARAMETERS CELL ********************
 
 # Parameters
 
-# start_from = "JC-202501-citibike-tripdata.csv.zip" # Useful for initial run
-# s3_base_url = "https://s3.amazonaws.com/tripdata"
-# control_file_path = "/lakehouse/default/Files/control/last_processed.json"
+start_from = "JC-202501-citibike-tripdata.csv.zip" # Useful for initial run
+s3_base_url = "https://s3.amazonaws.com/tripdata"
 
 # METADATA ********************
 
