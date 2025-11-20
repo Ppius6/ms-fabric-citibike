@@ -43,8 +43,6 @@
           ]
         },
         "name": "CheckLookupResult",
-        "state": "Inactive",
-        "onInactiveMarkAs": "Succeeded",
         "dependsOn": [
           {
             "activity": "Lookup Control Table",
@@ -57,8 +55,8 @@
       {
         "type": "TridentNotebook",
         "typeProperties": {
-          "notebookId": "f3e3e395-c391-4718-bd95-4ad696dabbb6",
-          "workspaceId": "778b8b43-34a7-4b55-a273-7763a295d386",
+          "notebookId": "96dabbb6-4ad6-bd95-4718-c391f3e3e395",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
           "parameters": {
             "s3_base_url": {
               "value": "https://s3.amazonaws.com/tripdata",
@@ -89,8 +87,6 @@
           "secureOutput": false
         },
         "name": "Get data",
-        "state": "Inactive",
-        "onInactiveMarkAs": "Succeeded",
         "dependsOn": [
           {
             "activity": "CheckLookupResult",
@@ -117,8 +113,8 @@
               "properties": {
                 "type": "Lakehouse",
                 "typeProperties": {
-                  "artifactId": "c84f89ea-9d33-4023-bd96-fb32e4017931",
-                  "workspaceId": "778b8b43-34a7-4b55-a273-7763a295d386",
+                  "artifactId": "e4017931-fb32-bd96-4023-9d33c84f89ea",
+                  "workspaceId": "00000000-0000-0000-0000-000000000000",
                   "rootFolder": "Tables"
                 },
                 "externalReferences": {
@@ -138,15 +134,13 @@
           "secureOutput": false
         },
         "name": "Lookup Control Table",
-        "state": "Inactive",
-        "onInactiveMarkAs": "Succeeded",
         "dependsOn": []
       },
       {
         "type": "TridentNotebook",
         "typeProperties": {
-          "notebookId": "518baa16-c671-4615-bcd9-6359db559fe6",
-          "workspaceId": "778b8b43-34a7-4b55-a273-7763a295d386",
+          "notebookId": "db559fe6-6359-bcd9-4615-c671518baa16",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
           "parameters": {
             "source_folder": {
               "value": "/lakehouse/default/Files/",
@@ -170,8 +164,6 @@
           "secureOutput": false
         },
         "name": "Extract and Load",
-        "state": "Inactive",
-        "onInactiveMarkAs": "Succeeded",
         "dependsOn": [
           {
             "activity": "Get data",
@@ -190,10 +182,7 @@
           "datasetSettings": {
             "type": "LakehouseTable",
             "typeProperties": {
-              "table": {
-                "value": "SELECT TOP 1 \n    MAX(datetime) as last_weather_date\nFROM weather_data",
-                "type": "Expression"
-              }
+              "table": "weather_control"
             },
             "schema": [],
             "connectionSettings": {
@@ -393,6 +382,54 @@
             "activity": "Get Max Trip Date",
             "dependencyConditions": [
               "Completed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "SqlServerStoredProcedure",
+        "typeProperties": {
+          "storedProcedureParameters": {
+            "LoadMonth": {
+              "value": "1",
+              "type": "Int32"
+            },
+            "LoadYear": {
+              "value": "2025",
+              "type": "Int32"
+            }
+          }
+        },
+        "connectionSettings": {
+          "name": "WH",
+          "properties": {
+            "type": "DataWarehouse",
+            "typeProperties": {
+              "artifactId": "8d7b7ef9-8c38-4475-a7dd-0bc5945a5b99",
+              "endpoint": "5tbjm3bhtu7u3hlnjwewrw2wyq-iofyw55hgrkuxitto5r2ffotqy.datawarehouse.fabric.microsoft.com",
+              "workspaceId": "778b8b43-34a7-4b55-a273-7763a295d386"
+            },
+            "externalReferences": {
+              "connection": "1ea2f73d-9f3a-40b9-ab9b-92b320804f76"
+            },
+            "annotations": []
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Execute LoadTripData",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "Check Weather Update Needed",
+            "dependencyConditions": [
+              "Succeeded"
             ]
           }
         ]
