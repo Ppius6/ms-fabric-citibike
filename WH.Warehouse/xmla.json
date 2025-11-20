@@ -13,15 +13,44 @@
     "sourceQueryCulture": "en-US",
     "tables": [
       {
-        "name": "dim_bikes",
-        "sourceLineageTag": "[dbo].[dim_bikes]",
+        "name": "dim_bike",
+        "sourceLineageTag": "[BikeShare].[dim_bike]",
         "columns": [
           {
-            "name": "bike_type",
+            "name": "BikeKey",
+            "dataType": "int64",
+            "sourceColumn": "BikeKey",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "BikeKey",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "RideableType",
             "dataType": "string",
-            "sourceColumn": "bike_type",
+            "sourceColumn": "RideableType",
             "sourceProviderType": "varchar",
-            "sourceLineageTag": "bike_type",
+            "sourceLineageTag": "RideableType",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "BikeCategory",
+            "dataType": "string",
+            "sourceColumn": "BikeCategory",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "BikeCategory",
             "summarizeBy": "none",
             "annotations": [
               {
@@ -37,9 +66,9 @@
             "mode": "directLake",
             "source": {
               "type": "entity",
-              "entityName": "dim_bikes",
+              "entityName": "dim_bike",
               "expressionSource": "DatabaseQuery",
-              "schemaName": "dbo"
+              "schemaName": "BikeShare"
             }
           }
         ],
@@ -52,15 +81,15 @@
       },
       {
         "name": "dim_date",
-        "sourceLineageTag": "[dbo].[dim_date]",
+        "sourceLineageTag": "[BikeShare].[dim_date]",
         "columns": [
           {
-            "name": "date_key",
+            "name": "DateKey",
             "dataType": "int64",
-            "sourceColumn": "date_key",
+            "sourceColumn": "DateKey",
             "formatString": "0",
             "sourceProviderType": "int",
-            "sourceLineageTag": "date_key",
+            "sourceLineageTag": "DateKey",
             "summarizeBy": "sum",
             "annotations": [
               {
@@ -70,12 +99,12 @@
             ]
           },
           {
-            "name": "full_date",
+            "name": "Date",
             "dataType": "dateTime",
-            "sourceColumn": "full_date",
+            "sourceColumn": "Date",
             "formatString": "General Date",
             "sourceProviderType": "date",
-            "sourceLineageTag": "full_date",
+            "sourceLineageTag": "Date",
             "summarizeBy": "none",
             "annotations": [
               {
@@ -85,12 +114,12 @@
             ]
           },
           {
-            "name": "day",
+            "name": "Year",
             "dataType": "int64",
-            "sourceColumn": "day",
+            "sourceColumn": "Year",
             "formatString": "0",
             "sourceProviderType": "int",
-            "sourceLineageTag": "day",
+            "sourceLineageTag": "Year",
             "summarizeBy": "sum",
             "annotations": [
               {
@@ -100,12 +129,12 @@
             ]
           },
           {
-            "name": "month",
+            "name": "Quarter",
             "dataType": "int64",
-            "sourceColumn": "month",
+            "sourceColumn": "Quarter",
             "formatString": "0",
             "sourceProviderType": "int",
-            "sourceLineageTag": "month",
+            "sourceLineageTag": "Quarter",
             "summarizeBy": "sum",
             "annotations": [
               {
@@ -115,12 +144,12 @@
             ]
           },
           {
-            "name": "year",
+            "name": "Month",
             "dataType": "int64",
-            "sourceColumn": "year",
+            "sourceColumn": "Month",
             "formatString": "0",
             "sourceProviderType": "int",
-            "sourceLineageTag": "year",
+            "sourceLineageTag": "Month",
             "summarizeBy": "sum",
             "annotations": [
               {
@@ -130,26 +159,11 @@
             ]
           },
           {
-            "name": "quarter",
-            "dataType": "int64",
-            "sourceColumn": "quarter",
-            "formatString": "0",
-            "sourceProviderType": "int",
-            "sourceLineageTag": "quarter",
-            "summarizeBy": "sum",
-            "annotations": [
-              {
-                "name": "SummarizationSetBy",
-                "value": "Automatic"
-              }
-            ]
-          },
-          {
-            "name": "day_name",
+            "name": "MonthName",
             "dataType": "string",
-            "sourceColumn": "day_name",
+            "sourceColumn": "MonthName",
             "sourceProviderType": "varchar",
-            "sourceLineageTag": "day_name",
+            "sourceLineageTag": "MonthName",
             "summarizeBy": "none",
             "annotations": [
               {
@@ -159,11 +173,41 @@
             ]
           },
           {
-            "name": "month_name",
+            "name": "DayOfMonth",
+            "dataType": "int64",
+            "sourceColumn": "DayOfMonth",
+            "formatString": "0",
+            "sourceProviderType": "int",
+            "sourceLineageTag": "DayOfMonth",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "DayOfWeek",
+            "dataType": "int64",
+            "sourceColumn": "DayOfWeek",
+            "formatString": "0",
+            "sourceProviderType": "int",
+            "sourceLineageTag": "DayOfWeek",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "DayName",
             "dataType": "string",
-            "sourceColumn": "month_name",
+            "sourceColumn": "DayName",
             "sourceProviderType": "varchar",
-            "sourceLineageTag": "month_name",
+            "sourceLineageTag": "DayName",
             "summarizeBy": "none",
             "annotations": [
               {
@@ -173,12 +217,27 @@
             ]
           },
           {
-            "name": "is_weekend",
+            "name": "WeekOfYear",
+            "dataType": "int64",
+            "sourceColumn": "WeekOfYear",
+            "formatString": "0",
+            "sourceProviderType": "int",
+            "sourceLineageTag": "WeekOfYear",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "IsWeekend",
             "dataType": "boolean",
-            "sourceColumn": "is_weekend",
+            "sourceColumn": "IsWeekend",
             "formatString": "\"TRUE\";\"TRUE\";\"FALSE\"",
             "sourceProviderType": "bit",
-            "sourceLineageTag": "is_weekend",
+            "sourceLineageTag": "IsWeekend",
             "summarizeBy": "none",
             "annotations": [
               {
@@ -188,13 +247,26 @@
             ]
           },
           {
-            "name": "week_number",
-            "dataType": "int64",
-            "sourceColumn": "week_number",
-            "formatString": "0",
-            "sourceProviderType": "int",
-            "sourceLineageTag": "week_number",
-            "summarizeBy": "sum",
+            "name": "Season",
+            "dataType": "string",
+            "sourceColumn": "Season",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "Season",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "HolidayName",
+            "dataType": "string",
+            "sourceColumn": "HolidayName",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "HolidayName",
+            "summarizeBy": "none",
             "annotations": [
               {
                 "name": "SummarizationSetBy",
@@ -211,7 +283,7 @@
               "type": "entity",
               "entityName": "dim_date",
               "expressionSource": "DatabaseQuery",
-              "schemaName": "dbo"
+              "schemaName": "BikeShare"
             }
           }
         ],
@@ -223,15 +295,44 @@
         ]
       },
       {
-        "name": "dim_members",
-        "sourceLineageTag": "[dbo].[dim_members]",
+        "name": "dim_member",
+        "sourceLineageTag": "[BikeShare].[dim_member]",
         "columns": [
           {
-            "name": "member_type",
+            "name": "MemberKey",
+            "dataType": "int64",
+            "sourceColumn": "MemberKey",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "MemberKey",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "MemberType",
             "dataType": "string",
-            "sourceColumn": "member_type",
+            "sourceColumn": "MemberType",
             "sourceProviderType": "varchar",
-            "sourceLineageTag": "member_type",
+            "sourceLineageTag": "MemberType",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "CustomerSegment",
+            "dataType": "string",
+            "sourceColumn": "CustomerSegment",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "CustomerSegment",
             "summarizeBy": "none",
             "annotations": [
               {
@@ -247,9 +348,9 @@
             "mode": "directLake",
             "source": {
               "type": "entity",
-              "entityName": "dim_members",
+              "entityName": "dim_member",
               "expressionSource": "DatabaseQuery",
-              "schemaName": "dbo"
+              "schemaName": "BikeShare"
             }
           }
         ],
@@ -261,15 +362,30 @@
         ]
       },
       {
-        "name": "dim_stations",
-        "sourceLineageTag": "[dbo].[dim_stations]",
+        "name": "dim_station",
+        "sourceLineageTag": "[BikeShare].[dim_station]",
         "columns": [
           {
-            "name": "station_id",
+            "name": "StationKey",
+            "dataType": "int64",
+            "sourceColumn": "StationKey",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "StationKey",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "StationID",
             "dataType": "string",
-            "sourceColumn": "station_id",
+            "sourceColumn": "StationID",
             "sourceProviderType": "varchar",
-            "sourceLineageTag": "station_id",
+            "sourceLineageTag": "StationID",
             "summarizeBy": "none",
             "annotations": [
               {
@@ -279,11 +395,11 @@
             ]
           },
           {
-            "name": "station_name",
+            "name": "StationName",
             "dataType": "string",
-            "sourceColumn": "station_name",
+            "sourceColumn": "StationName",
             "sourceProviderType": "varchar",
-            "sourceLineageTag": "station_name",
+            "sourceLineageTag": "StationName",
             "summarizeBy": "none",
             "annotations": [
               {
@@ -293,11 +409,11 @@
             ]
           },
           {
-            "name": "latitude",
+            "name": "Latitude",
             "dataType": "double",
-            "sourceColumn": "latitude",
+            "sourceColumn": "Latitude",
             "sourceProviderType": "float",
-            "sourceLineageTag": "latitude",
+            "sourceLineageTag": "Latitude",
             "summarizeBy": "sum",
             "annotations": [
               {
@@ -311,11 +427,11 @@
             ]
           },
           {
-            "name": "longitude",
+            "name": "Longitude",
             "dataType": "double",
-            "sourceColumn": "longitude",
+            "sourceColumn": "Longitude",
             "sourceProviderType": "float",
-            "sourceLineageTag": "longitude",
+            "sourceLineageTag": "Longitude",
             "summarizeBy": "sum",
             "annotations": [
               {
@@ -325,6 +441,20 @@
               {
                 "name": "PBI_FormatHint",
                 "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "Area",
+            "dataType": "string",
+            "sourceColumn": "Area",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "Area",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
               }
             ]
           }
@@ -335,9 +465,9 @@
             "mode": "directLake",
             "source": {
               "type": "entity",
-              "entityName": "dim_stations",
+              "entityName": "dim_station",
               "expressionSource": "DatabaseQuery",
-              "schemaName": "dbo"
+              "schemaName": "BikeShare"
             }
           }
         ],
@@ -350,15 +480,15 @@
       },
       {
         "name": "dim_time",
-        "sourceLineageTag": "[dbo].[dim_time]",
+        "sourceLineageTag": "[BikeShare].[dim_time]",
         "columns": [
           {
-            "name": "time_key",
+            "name": "TimeKey",
             "dataType": "int64",
-            "sourceColumn": "time_key",
+            "sourceColumn": "TimeKey",
             "formatString": "0",
             "sourceProviderType": "int",
-            "sourceLineageTag": "time_key",
+            "sourceLineageTag": "TimeKey",
             "summarizeBy": "sum",
             "annotations": [
               {
@@ -368,12 +498,12 @@
             ]
           },
           {
-            "name": "hour",
+            "name": "Hour",
             "dataType": "int64",
-            "sourceColumn": "hour",
+            "sourceColumn": "Hour",
             "formatString": "0",
             "sourceProviderType": "int",
-            "sourceLineageTag": "hour",
+            "sourceLineageTag": "Hour",
             "summarizeBy": "sum",
             "annotations": [
               {
@@ -383,11 +513,55 @@
             ]
           },
           {
-            "name": "hour_period",
+            "name": "HourLabel",
             "dataType": "string",
-            "sourceColumn": "hour_period",
+            "sourceColumn": "HourLabel",
             "sourceProviderType": "varchar",
-            "sourceLineageTag": "hour_period",
+            "sourceLineageTag": "HourLabel",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "TimeOfDay",
+            "dataType": "string",
+            "sourceColumn": "TimeOfDay",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "TimeOfDay",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "IsBusinessHour",
+            "dataType": "boolean",
+            "sourceColumn": "IsBusinessHour",
+            "formatString": "\"TRUE\";\"TRUE\";\"FALSE\"",
+            "sourceProviderType": "bit",
+            "sourceLineageTag": "IsBusinessHour",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "IsPeakHour",
+            "dataType": "boolean",
+            "sourceColumn": "IsPeakHour",
+            "formatString": "\"TRUE\";\"TRUE\";\"FALSE\"",
+            "sourceProviderType": "bit",
+            "sourceLineageTag": "IsPeakHour",
             "summarizeBy": "none",
             "annotations": [
               {
@@ -405,7 +579,7 @@
               "type": "entity",
               "entityName": "dim_time",
               "expressionSource": "DatabaseQuery",
-              "schemaName": "dbo"
+              "schemaName": "BikeShare"
             }
           }
         ],
@@ -417,16 +591,16 @@
         ]
       },
       {
-        "name": "fact_bike_trips",
-        "sourceLineageTag": "[dbo].[fact_bike_trips]",
+        "name": "dim_weather",
+        "sourceLineageTag": "[BikeShare].[dim_weather]",
         "columns": [
           {
-            "name": "trip_id",
+            "name": "WeatherKey",
             "dataType": "int64",
-            "sourceColumn": "trip_id",
+            "sourceColumn": "WeatherKey",
             "formatString": "0",
             "sourceProviderType": "bigint",
-            "sourceLineageTag": "trip_id",
+            "sourceLineageTag": "WeatherKey",
             "summarizeBy": "sum",
             "annotations": [
               {
@@ -436,12 +610,12 @@
             ]
           },
           {
-            "name": "date_key",
+            "name": "DateKey",
             "dataType": "int64",
-            "sourceColumn": "date_key",
+            "sourceColumn": "DateKey",
             "formatString": "0",
             "sourceProviderType": "int",
-            "sourceLineageTag": "date_key",
+            "sourceLineageTag": "DateKey",
             "summarizeBy": "sum",
             "annotations": [
               {
@@ -451,12 +625,12 @@
             ]
           },
           {
-            "name": "start_time_key",
+            "name": "TimeKey",
             "dataType": "int64",
-            "sourceColumn": "start_time_key",
+            "sourceColumn": "TimeKey",
             "formatString": "0",
             "sourceProviderType": "int",
-            "sourceLineageTag": "start_time_key",
+            "sourceLineageTag": "TimeKey",
             "summarizeBy": "sum",
             "annotations": [
               {
@@ -466,13 +640,550 @@
             ]
           },
           {
-            "name": "end_time_key",
+            "name": "Temperature",
+            "dataType": "double",
+            "sourceColumn": "Temperature",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "Temperature",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "Humidity",
             "dataType": "int64",
-            "sourceColumn": "end_time_key",
+            "sourceColumn": "Humidity",
             "formatString": "0",
             "sourceProviderType": "int",
-            "sourceLineageTag": "end_time_key",
+            "sourceLineageTag": "Humidity",
             "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "Precipitation",
+            "dataType": "double",
+            "sourceColumn": "Precipitation",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "Precipitation",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "WeatherCode",
+            "dataType": "int64",
+            "sourceColumn": "WeatherCode",
+            "formatString": "0",
+            "sourceProviderType": "int",
+            "sourceLineageTag": "WeatherCode",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "WeatherCondition",
+            "dataType": "string",
+            "sourceColumn": "WeatherCondition",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "WeatherCondition",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "WindSpeed",
+            "dataType": "double",
+            "sourceColumn": "WindSpeed",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "WindSpeed",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "FeelsLikeTemp",
+            "dataType": "double",
+            "sourceColumn": "FeelsLikeTemp",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "FeelsLikeTemp",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "{{Partition_Name}}",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "dim_weather",
+              "expressionSource": "DatabaseQuery",
+              "schemaName": "BikeShare"
+            }
+          }
+        ],
+        "annotations": [
+          {
+            "name": "IsTableInBiModel",
+            "value": "False"
+          }
+        ]
+      },
+      {
+        "name": "fct_trips",
+        "sourceLineageTag": "[BikeShare].[fct_trips]",
+        "columns": [
+          {
+            "name": "TripKey",
+            "dataType": "int64",
+            "sourceColumn": "TripKey",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "TripKey",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "RideID",
+            "dataType": "string",
+            "sourceColumn": "RideID",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "RideID",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "StartDateKey",
+            "dataType": "int64",
+            "sourceColumn": "StartDateKey",
+            "formatString": "0",
+            "sourceProviderType": "int",
+            "sourceLineageTag": "StartDateKey",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "StartTimeKey",
+            "dataType": "int64",
+            "sourceColumn": "StartTimeKey",
+            "formatString": "0",
+            "sourceProviderType": "int",
+            "sourceLineageTag": "StartTimeKey",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "EndDateKey",
+            "dataType": "int64",
+            "sourceColumn": "EndDateKey",
+            "formatString": "0",
+            "sourceProviderType": "int",
+            "sourceLineageTag": "EndDateKey",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "EndTimeKey",
+            "dataType": "int64",
+            "sourceColumn": "EndTimeKey",
+            "formatString": "0",
+            "sourceProviderType": "int",
+            "sourceLineageTag": "EndTimeKey",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "StartStationKey",
+            "dataType": "int64",
+            "sourceColumn": "StartStationKey",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "StartStationKey",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "EndStationKey",
+            "dataType": "int64",
+            "sourceColumn": "EndStationKey",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "EndStationKey",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "BikeKey",
+            "dataType": "int64",
+            "sourceColumn": "BikeKey",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "BikeKey",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "MemberKey",
+            "dataType": "int64",
+            "sourceColumn": "MemberKey",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "MemberKey",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "WeatherKey",
+            "dataType": "int64",
+            "sourceColumn": "WeatherKey",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "WeatherKey",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "TripDurationMinutes",
+            "dataType": "int64",
+            "sourceColumn": "TripDurationMinutes",
+            "formatString": "0",
+            "sourceProviderType": "int",
+            "sourceLineageTag": "TripDurationMinutes",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "TripDistanceKm",
+            "dataType": "double",
+            "sourceColumn": "TripDistanceKm",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "TripDistanceKm",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "StartLatitude",
+            "dataType": "double",
+            "sourceColumn": "StartLatitude",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "StartLatitude",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "StartLongitude",
+            "dataType": "double",
+            "sourceColumn": "StartLongitude",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "StartLongitude",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "EndLatitude",
+            "dataType": "double",
+            "sourceColumn": "EndLatitude",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "EndLatitude",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "EndLongitude",
+            "dataType": "double",
+            "sourceColumn": "EndLongitude",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "EndLongitude",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "SpeedKmh",
+            "dataType": "double",
+            "sourceColumn": "SpeedKmh",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "SpeedKmh",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "ProcessedAt",
+            "dataType": "dateTime",
+            "sourceColumn": "ProcessedAt",
+            "formatString": "General Date",
+            "sourceProviderType": "datetime2",
+            "sourceLineageTag": "ProcessedAt",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "ProcessingBatchID",
+            "dataType": "string",
+            "sourceColumn": "ProcessingBatchID",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "ProcessingBatchID",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "{{Partition_Name}}",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "fct_trips",
+              "expressionSource": "DatabaseQuery",
+              "schemaName": "BikeShare"
+            }
+          }
+        ],
+        "annotations": [
+          {
+            "name": "IsTableInBiModel",
+            "value": "False"
+          }
+        ]
+      },
+      {
+        "name": "staging_citibiketrips",
+        "sourceLineageTag": "[BikeShare].[staging_citibiketrips]",
+        "columns": [
+          {
+            "name": "ride_id",
+            "dataType": "string",
+            "sourceColumn": "ride_id",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "ride_id",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "rideable_type",
+            "dataType": "string",
+            "sourceColumn": "rideable_type",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "rideable_type",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "started_at",
+            "dataType": "dateTime",
+            "sourceColumn": "started_at",
+            "formatString": "General Date",
+            "sourceProviderType": "datetime2",
+            "sourceLineageTag": "started_at",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "ended_at",
+            "dataType": "dateTime",
+            "sourceColumn": "ended_at",
+            "formatString": "General Date",
+            "sourceProviderType": "datetime2",
+            "sourceLineageTag": "ended_at",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "start_station_name",
+            "dataType": "string",
+            "sourceColumn": "start_station_name",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "start_station_name",
+            "summarizeBy": "none",
             "annotations": [
               {
                 "name": "SummarizationSetBy",
@@ -486,6 +1197,20 @@
             "sourceColumn": "start_station_id",
             "sourceProviderType": "varchar",
             "sourceLineageTag": "start_station_id",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "end_station_name",
+            "dataType": "string",
+            "sourceColumn": "end_station_name",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "end_station_name",
             "summarizeBy": "none",
             "annotations": [
               {
@@ -509,54 +1234,11 @@
             ]
           },
           {
-            "name": "bike_type",
-            "dataType": "string",
-            "sourceColumn": "bike_type",
-            "sourceProviderType": "varchar",
-            "sourceLineageTag": "bike_type",
-            "summarizeBy": "none",
-            "annotations": [
-              {
-                "name": "SummarizationSetBy",
-                "value": "Automatic"
-              }
-            ]
-          },
-          {
-            "name": "member_type",
-            "dataType": "string",
-            "sourceColumn": "member_type",
-            "sourceProviderType": "varchar",
-            "sourceLineageTag": "member_type",
-            "summarizeBy": "none",
-            "annotations": [
-              {
-                "name": "SummarizationSetBy",
-                "value": "Automatic"
-              }
-            ]
-          },
-          {
-            "name": "trip_duration_minutes",
-            "dataType": "int64",
-            "sourceColumn": "trip_duration_minutes",
-            "formatString": "0",
-            "sourceProviderType": "int",
-            "sourceLineageTag": "trip_duration_minutes",
-            "summarizeBy": "sum",
-            "annotations": [
-              {
-                "name": "SummarizationSetBy",
-                "value": "Automatic"
-              }
-            ]
-          },
-          {
-            "name": "estimated_distance_km",
+            "name": "start_lat",
             "dataType": "double",
-            "sourceColumn": "estimated_distance_km",
+            "sourceColumn": "start_lat",
             "sourceProviderType": "float",
-            "sourceLineageTag": "estimated_distance_km",
+            "sourceLineageTag": "start_lat",
             "summarizeBy": "sum",
             "annotations": [
               {
@@ -568,6 +1250,117 @@
                 "value": "{\"isGeneralNumber\":true}"
               }
             ]
+          },
+          {
+            "name": "start_lng",
+            "dataType": "double",
+            "sourceColumn": "start_lng",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "start_lng",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "end_lat",
+            "dataType": "double",
+            "sourceColumn": "end_lat",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "end_lat",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "end_lng",
+            "dataType": "double",
+            "sourceColumn": "end_lng",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "end_lng",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "member_casual",
+            "dataType": "string",
+            "sourceColumn": "member_casual",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "member_casual",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "source_zip_file",
+            "dataType": "string",
+            "sourceColumn": "source_zip_file",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "source_zip_file",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "processed_at",
+            "dataType": "dateTime",
+            "sourceColumn": "processed_at",
+            "formatString": "General Date",
+            "sourceProviderType": "datetime2",
+            "sourceLineageTag": "processed_at",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "processing_batch_id",
+            "dataType": "string",
+            "sourceColumn": "processing_batch_id",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "processing_batch_id",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
           }
         ],
         "partitions": [
@@ -576,9 +1369,191 @@
             "mode": "directLake",
             "source": {
               "type": "entity",
-              "entityName": "fact_bike_trips",
+              "entityName": "staging_citibiketrips",
               "expressionSource": "DatabaseQuery",
-              "schemaName": "dbo"
+              "schemaName": "BikeShare"
+            }
+          }
+        ],
+        "annotations": [
+          {
+            "name": "IsTableInBiModel",
+            "value": "False"
+          }
+        ]
+      },
+      {
+        "name": "staging_weatherdata",
+        "sourceLineageTag": "[BikeShare].[staging_weatherdata]",
+        "columns": [
+          {
+            "name": "datetime",
+            "dataType": "dateTime",
+            "sourceColumn": "datetime",
+            "formatString": "General Date",
+            "sourceProviderType": "datetime2",
+            "sourceLineageTag": "datetime",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "temperature_c",
+            "dataType": "double",
+            "sourceColumn": "temperature_c",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "temperature_c",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "humidity_percent",
+            "dataType": "int64",
+            "sourceColumn": "humidity_percent",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "humidity_percent",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "precipitation_mm",
+            "dataType": "double",
+            "sourceColumn": "precipitation_mm",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "precipitation_mm",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "weather_code",
+            "dataType": "int64",
+            "sourceColumn": "weather_code",
+            "formatString": "0",
+            "sourceProviderType": "bigint",
+            "sourceLineageTag": "weather_code",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "wind_speed_kmh",
+            "dataType": "double",
+            "sourceColumn": "wind_speed_kmh",
+            "sourceProviderType": "float",
+            "sourceLineageTag": "wind_speed_kmh",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              },
+              {
+                "name": "PBI_FormatHint",
+                "value": "{\"isGeneralNumber\":true}"
+              }
+            ]
+          },
+          {
+            "name": "date_key",
+            "dataType": "int64",
+            "sourceColumn": "date_key",
+            "formatString": "0",
+            "sourceProviderType": "int",
+            "sourceLineageTag": "date_key",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "time_key",
+            "dataType": "int64",
+            "sourceColumn": "time_key",
+            "formatString": "0",
+            "sourceProviderType": "int",
+            "sourceLineageTag": "time_key",
+            "summarizeBy": "sum",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "weather_condition",
+            "dataType": "string",
+            "sourceColumn": "weather_condition",
+            "sourceProviderType": "varchar",
+            "sourceLineageTag": "weather_condition",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          },
+          {
+            "name": "loaded_at",
+            "dataType": "dateTime",
+            "sourceColumn": "loaded_at",
+            "formatString": "General Date",
+            "sourceProviderType": "datetime2",
+            "sourceLineageTag": "loaded_at",
+            "summarizeBy": "none",
+            "annotations": [
+              {
+                "name": "SummarizationSetBy",
+                "value": "Automatic"
+              }
+            ]
+          }
+        ],
+        "partitions": [
+          {
+            "name": "{{Partition_Name}}",
+            "mode": "directLake",
+            "source": {
+              "type": "entity",
+              "entityName": "staging_weatherdata",
+              "expressionSource": "DatabaseQuery",
+              "schemaName": "BikeShare"
             }
           }
         ],
