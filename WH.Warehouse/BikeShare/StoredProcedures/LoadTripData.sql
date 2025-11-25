@@ -30,7 +30,18 @@ BEGIN
         AND MONTH(CAST(started_at AS DATE)) = @LoadMonth
         AND NOT EXISTS (SELECT 1 FROM BikeShare.dim_date WHERE dim_date.DateKey = CONVERT(INT, FORMAT(CAST(started_at AS DATE), 'yyyyMMdd')));
 
-    -- Populate Time Dimension (for all possible hours)
+    -- Populate Time Dimension
+    ;WITH Hours AS (
+        SELECT 0 AS Hour
+        UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+        UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6
+        UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9
+        UNION ALL SELECT 10 UNION ALL SELECT 11 UNION ALL SELECT 12
+        UNION ALL SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15
+        UNION ALL SELECT 16 UNION ALL SELECT 17 UNION ALL SELECT 18
+        UNION ALL SELECT 19 UNION ALL SELECT 20 UNION ALL SELECT 21
+        UNION ALL SELECT 22 UNION ALL SELECT 23
+    )
     INSERT INTO BikeShare.dim_time (TimeKey, Hour, HourLabel, TimeOfDay, IsBusinessHour, IsPeakHour)
     SELECT 
         h.Hour as TimeKey,
@@ -44,44 +55,45 @@ BEGIN
         END as TimeOfDay,
         CASE WHEN h.Hour BETWEEN 8 AND 17 THEN 1 ELSE 0 END as IsBusinessHour,
         CASE WHEN h.Hour IN (7,8,9,17,18,19) THEN 1 ELSE 0 END as IsPeakHour
-    FROM (SELECT number as Hour FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),
-          (13),(14),(15),(16),(17),(18),(19),(20),(21),(22),(23)) AS Hours(number)) h
+    FROM Hours h
     WHERE NOT EXISTS (SELECT 1 FROM BikeShare.dim_time WHERE dim_time.TimeKey = h.Hour);
 
     -- Populate Station Dimension
     INSERT INTO BikeShare.dim_station (StationID, StationName, Latitude, Longitude, Area)
-    SELECT DISTINCT 
-        start_station_id,
-        start_station_name,
-        start_lat,
-        start_lng,
-        CASE 
-            WHEN start_station_name LIKE '%JC%' THEN 'Jersey City'
-            WHEN start_station_name LIKE '%HB%' THEN 'Hoboken'
-            ELSE 'Other'
-        END as Area
-    FROM BikeShare.staging_citibiketrips
-    WHERE start_station_id IS NOT NULL 
-        AND start_station_name IS NOT NULL
-        AND NOT EXISTS (SELECT 1 FROM BikeShare.dim_station WHERE dim_station.StationID = start_station_id)
-    
-    UNION
-    
-    SELECT DISTINCT 
-        end_station_id,
-        end_station_name,
-        end_lat,
-        end_lng,
-        CASE 
-            WHEN end_station_name LIKE '%JC%' THEN 'Jersey City'
-            WHEN end_station_name LIKE '%HB%' THEN 'Hoboken'
-            ELSE 'Other'
-        END as Area
-    FROM BikeShare.staging_citibiketrips
-    WHERE end_station_id IS NOT NULL 
-        AND end_station_name IS NOT NULL
-        AND NOT EXISTS (SELECT 1 FROM BikeShare.dim_station WHERE dim_station.StationID = end_station_id);
-
+    SELECT StationID, StationName, Latitude, Longitude, Area
+    FROM (
+        SELECT DISTINCT 
+            start_station_id AS StationID,
+            start_station_name AS StationName,
+            start_lat AS Latitude,
+            start_lng AS Longitude,
+            CASE 
+                WHEN start_station_name LIKE '%JC%' THEN 'Jersey City'
+                WHEN start_station_name LIKE '%HB%' THEN 'Hoboken'
+                ELSE 'Other'
+            END as Area
+        FROM BikeShare.staging_citibiketrips
+        WHERE start_station_id IS NOT NULL AND start_station_name IS NOT NULL
+        
+        UNION
+        
+        SELECT DISTINCT 
+            end_station_id,
+            end_station_name,
+            end_lat,
+            end_lng,
+            CASE 
+                WHEN end_station_name LIKE '%JC%' THEN 'Jersey City'
+                WHEN end_station_name LIKE '%HB%' THEN 'Hoboken'
+                ELSE 'Other'
+            END
+        FROM BikeShare.staging_citibiketrips
+        WHERE end_station_id IS NOT NULL AND end_station_name IS NOT NULL
+    ) AS AllStations
+    WHERE NOT EXISTS (
+        SELECT 1 FROM BikeShare.dim_station 
+        WHERE dim_station.StationID = AllStations.StationID
+    );
     -- Populate Bike Dimension
     INSERT INTO BikeShare.dim_bike (RideableType, BikeCategory)
     SELECT DISTINCT 
@@ -170,6 +182,11 @@ BEGIN
     LEFT JOIN BikeShare.dim_weather w ON CONVERT(INT, FORMAT(CAST(t.started_at AS DATE), 'yyyyMMdd')) = w.DateKey 
         AND DATEPART(HOUR, t.started_at) = w.TimeKey
     WHERE YEAR(CAST(t.started_at AS DATE)) = @LoadYear 
-        AND MONTH(CAST(t.started_at AS DATE)) = @LoadMonth;
+        AND MONTH(CAST(t.started_at AS DATE)) = @LoadMonth
+        -- Check if RideID already exists
+        AND NOT EXISTS (
+            SELECT 1 FROM BikeShare.fct_trips existing 
+            WHERE existing.RideID = t.ride_id
+        );
 
 END

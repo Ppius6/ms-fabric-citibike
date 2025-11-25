@@ -100,7 +100,9 @@
         "type": "Lookup",
         "typeProperties": {
           "source": {
-            "type": "LakehouseTableSource"
+            "type": "LakehouseTableSource",
+            "sqlReaderQuery": "SELECT * FROM download_control",
+            "partitionOption": "None"
           },
           "datasetSettings": {
             "type": "LakehouseTable",
@@ -177,7 +179,9 @@
         "type": "Lookup",
         "typeProperties": {
           "source": {
-            "type": "LakehouseTableSource"
+            "type": "LakehouseTableSource",
+            "sqlReaderQuery": "SELECT TOP 1 *\nFROM weather_control",
+            "partitionOption": "None"
           },
           "datasetSettings": {
             "type": "LakehouseTable",
@@ -224,7 +228,9 @@
         "type": "Lookup",
         "typeProperties": {
           "source": {
-            "type": "LakehouseTableSource"
+            "type": "LakehouseTableSource",
+            "sqlReaderQuery": "SELECT TOP 1 *\nFROM citibike_metadata",
+            "partitionOption": "None"
           },
           "datasetSettings": {
             "type": "LakehouseTable",
@@ -389,6 +395,7 @@
       {
         "type": "SqlServerStoredProcedure",
         "typeProperties": {
+          "storedProcedureName": "[BikeShare].[LoadTripData]",
           "storedProcedureParameters": {
             "LoadMonth": {
               "value": "1",
@@ -422,9 +429,7 @@
           "secureInput": false,
           "secureOutput": false
         },
-        "name": "Execute LoadTripData",
-        "state": "Inactive",
-        "onInactiveMarkAs": "Succeeded",
+        "name": "Execute LoadTripData Stored Procedure",
         "dependsOn": [
           {
             "activity": "Check Weather Update Needed",
