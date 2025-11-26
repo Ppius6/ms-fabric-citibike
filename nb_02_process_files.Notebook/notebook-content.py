@@ -302,17 +302,20 @@ def write_to_table(df):
             total_rows = df.count()
             print(f" Writing {total_rows} rows to table: {target_table}")
             
-            # Write to main table (overwrite for now)
-            df.write.mode("overwrite").format("delta").saveAsTable(target_table)
+            # Check if table exists
+            tables = spark.catalog.listTables()
+            table_exists = any(table.name == target_table for table in tables)
+
+            if table_exists:
+                # Append new data
+                df.write.mode("append").format("delta").saveAsTable(target_table)
+            else:
+                df.write.mode("overwrite").format("delta").saveAsTable(target_table)
             
             # Verify write
             table_count = spark.sql(f"SELECT COUNT(*) as count FROM {target_table}").collect()[0]["count"]
             print(f" Successfully wrote {table_count} rows to {target_table}")
-            
-            # Show sample
-            print("\nSample data:")
-            spark.sql(f"SELECT * FROM {target_table} LIMIT 5").show()
-            
+
             return total_rows
             
         except Exception as e:
@@ -353,9 +356,9 @@ def create_metadata_table():
             # Create empty table
             empty_df = spark.createDataFrame([], schema)
             empty_df.write.format("delta").saveAsTable("citibike_metadata")
-            print("✅ Created citibike_metadata table")
+            print("Created citibike_metadata table")
         else:
-            print("✅ citibike_metadata table already exists")
+            print("citibike_metadata table already exists")
             
     except Exception as e:
         print(f"⚠️ Error creating metadata table: {e}")
