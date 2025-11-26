@@ -75,7 +75,7 @@ An end-to-end data engineering solution using Microsoft Fabric to process 800,00
 | `nb_03_get_weather_data` | Fetches weather data from OpenMeteo API |
 
 ### Data Factory Pipeline
-
+![Data Factory Pipeline Diagram](./df.png)
 
 ## Data Model
 
