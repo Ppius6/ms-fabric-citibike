@@ -393,34 +393,35 @@
         ]
       },
       {
-        "type": "SqlServerStoredProcedure",
+        "type": "Lookup",
         "typeProperties": {
-          "storedProcedureName": "[BikeShare].[LoadTripData]",
-          "storedProcedureParameters": {
-            "LoadMonth": {
-              "value": "1",
-              "type": "Int32"
-            },
-            "LoadYear": {
-              "value": "2025",
-              "type": "Int32"
-            }
-          }
-        },
-        "connectionSettings": {
-          "name": "WH",
-          "properties": {
-            "type": "DataWarehouse",
-            "typeProperties": {
-              "artifactId": "8d7b7ef9-8c38-4475-a7dd-0bc5945a5b99",
-              "endpoint": "5tbjm3bhtu7u3hlnjwewrw2wyq-iofyw55hgrkuxitto5r2ffotqy.datawarehouse.fabric.microsoft.com",
-              "workspaceId": "778b8b43-34a7-4b55-a273-7763a295d386"
-            },
-            "externalReferences": {
-              "connection": "1ea2f73d-9f3a-40b9-ab9b-92b320804f76"
+          "source": {
+            "type": "DataWarehouseSource",
+            "sqlReaderQuery": "SELECT DISTINCT\n    YEAR(CAST(s.started_at AS DATE)) AS LoadYear,\n    MONTH(CAST(s.started_at AS DATE)) AS LoadMonth\nFROM BikeShare.staging_citibiketrips s\nWHERE NOT EXISTS (\n    SELECT 1 \n    FROM BikeShare.fct_trips f\n    INNER JOIN BikeShare.dim_date d ON f.StartDateKey = d.DateKey\n    WHERE d.Year = YEAR(CAST(s.started_at AS DATE))\n      AND d.Month = MONTH(CAST(s.started_at AS DATE))\n)\nORDER BY LoadYear, LoadMonth;",
+            "partitionOption": "None",
+            "queryTimeout": "02:00:00"
+          },
+          "datasetSettings": {
+            "type": "DataWarehouseTable",
+            "schema": [],
+            "connectionSettings": {
+              "name": "WH",
+              "properties": {
+                "type": "DataWarehouse",
+                "typeProperties": {
+                  "artifactId": "8d7b7ef9-8c38-4475-a7dd-0bc5945a5b99",
+                  "endpoint": "5tbjm3bhtu7u3hlnjwewrw2wyq-iofyw55hgrkuxitto5r2ffotqy.datawarehouse.fabric.microsoft.com",
+                  "workspaceId": "778b8b43-34a7-4b55-a273-7763a295d386"
+                },
+                "externalReferences": {
+                  "connection": "1ea2f73d-9f3a-40b9-ab9b-92b320804f76"
+                },
+                "annotations": []
+              }
             },
             "annotations": []
-          }
+          },
+          "firstRowOnly": false
         },
         "policy": {
           "timeout": "0.12:00:00",
@@ -429,10 +430,78 @@
           "secureInput": false,
           "secureOutput": false
         },
-        "name": "Execute LoadTripData Stored Procedure",
+        "name": "Get Unloaded Months",
+        "description": "Check which months data have not been loaded from the staging views to the warehouse tables",
         "dependsOn": [
           {
             "activity": "Check Weather Update Needed",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "ForEach",
+        "typeProperties": {
+          "isSequential": true,
+          "items": {
+            "value": "@activity('Get Unloaded Months').output.value",
+            "type": "Expression"
+          },
+          "activities": [
+            {
+              "type": "SqlServerStoredProcedure",
+              "typeProperties": {
+                "storedProcedureName": "[BikeShare].[LoadTripData]",
+                "storedProcedureParameters": {
+                  "LoadMonth": {
+                    "value": {
+                      "value": "@item().LoadMonth",
+                      "type": "Expression"
+                    },
+                    "type": "Int32"
+                  },
+                  "LoadYear": {
+                    "value": {
+                      "value": "@item().LoadYear",
+                      "type": "Expression"
+                    },
+                    "type": "Int32"
+                  }
+                }
+              },
+              "connectionSettings": {
+                "name": "WH",
+                "properties": {
+                  "type": "DataWarehouse",
+                  "typeProperties": {
+                    "artifactId": "8d7b7ef9-8c38-4475-a7dd-0bc5945a5b99",
+                    "endpoint": "5tbjm3bhtu7u3hlnjwewrw2wyq-iofyw55hgrkuxitto5r2ffotqy.datawarehouse.fabric.microsoft.com",
+                    "workspaceId": "778b8b43-34a7-4b55-a273-7763a295d386"
+                  },
+                  "externalReferences": {
+                    "connection": "1ea2f73d-9f3a-40b9-ab9b-92b320804f76"
+                  },
+                  "annotations": []
+                }
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Execute LoadTripData Stored Procedure",
+              "dependsOn": []
+            }
+          ]
+        },
+        "name": "Load unloaded months into warehouse",
+        "dependsOn": [
+          {
+            "activity": "Get Unloaded Months",
             "dependencyConditions": [
               "Succeeded"
             ]
