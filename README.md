@@ -114,13 +114,3 @@ An end-to-end data engineering solution using Microsoft Fabric to process 800,00
 
 - **Trip Data**: [Citibike System Data](https://s3.amazonaws.com/tripdata) (Jersey City subset)
 - **Weather Data**: [Open-Meteo Historical Weather API](https://open-meteo.com/)
-
-## Skills Demonstrated
-
-- Microsoft Fabric (Data Factory, Lakehouse, Warehouse)
-- Delta Lake / Medallion Architecture
-- PySpark & T-SQL
-- Dimensional Modeling
-- REST API Integration
-- Incremental Loading Patterns
-- Pipeline Orchestration
